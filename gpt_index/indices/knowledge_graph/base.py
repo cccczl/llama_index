@@ -71,7 +71,7 @@ class GPTKnowledgeGraphIndex(BaseGPTIndex[KG]):
         )
 
     @classmethod
-    def get_query_map(self) -> QueryMap:
+    def get_query_map(cls) -> QueryMap:
         """Get query map."""
         return {
             QueryMode.DEFAULT: GPTKGTableQuery,
@@ -110,7 +110,7 @@ class GPTKnowledgeGraphIndex(BaseGPTIndex[KG]):
                 index_struct.add_node([subj, obj], n)
 
             if self.include_embeddings:
-                for i, triplet in enumerate(triplets):
+                for triplet in triplets:
                     self._service_context.embed_model.queue_text_for_embeddding(
                         str(triplet), str(triplet)
                     )

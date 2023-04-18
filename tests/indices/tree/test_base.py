@@ -245,7 +245,7 @@ def test_summarize_query(
     }
     # TODO: fix unit test later
     response = tree.query(query_str, mode="summarize", **query_kwargs)
-    print(str(response))
+    print(response)
     assert str(response) == (
         "What is?:Hello world.:This is a test.:This is another test.:This is a test v2."
     )

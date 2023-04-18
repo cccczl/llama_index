@@ -29,19 +29,19 @@ def create_indexes(
     # Create all necessary SQL database objects.
     databases = {}
     for db_name in os.listdir(os.path.join(spider_dir, "database")):
-        db_path = os.path.join(spider_dir, "database", db_name, db_name + ".sqlite")
+        db_path = os.path.join(spider_dir, "database", db_name, f"{db_name}.sqlite")
         if not os.path.exists(db_path):
             continue
-        engine = create_engine("sqlite:///" + db_path)
+        engine = create_engine(f"sqlite:///{db_path}")
         databases[db_name] = SQLDatabase(engine=engine)
         # Test connection.
         engine.execute("select name from sqlite_master where type = 'table'").fetchone()
 
     llm_predictor = LLMPredictor(llm=llm)
-    llm_indexes = {}
-    for db_name, db in databases.items():
-        llm_indexes[db_name] = GPTSQLStructStoreIndex(
+    return {
+        db_name: GPTSQLStructStoreIndex(
             llm_predictor=llm_predictor,
             sql_database=db,
         )
-    return llm_indexes
+        for db_name, db in databases.items()
+    }

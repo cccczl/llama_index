@@ -254,7 +254,7 @@ def test_query(
         "in the form of (subset, predicate, object):"
     )
     expected_response = (
-        "foo:(foo, is, bar):" + rel_initial_text + ":('foo', 'is', 'bar')"
+        f"foo:(foo, is, bar):{rel_initial_text}:('foo', 'is', 'bar')"
     )
 
     assert str(response) == expected_response

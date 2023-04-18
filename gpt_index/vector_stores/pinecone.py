@@ -26,21 +26,18 @@ def get_metadata_from_node_info(
     node_info: Dict[str, Any], field_prefix: str
 ) -> Dict[str, Any]:
     """Get metadata from node extra info."""
-    metadata = {}
-    for key, value in node_info.items():
-        metadata[field_prefix + "_" + key] = value
-    return metadata
+    return {f"{field_prefix}_{key}": value for key, value in node_info.items()}
 
 
 def get_node_info_from_metadata(
     metadata: Dict[str, Any], field_prefix: str
 ) -> Dict[str, Any]:
     """Get node extra info from metadata."""
-    node_extra_info = {}
-    for key, value in metadata.items():
-        if key.startswith(field_prefix + "_"):
-            node_extra_info[key.replace(field_prefix + "_", "")] = value
-    return node_extra_info
+    return {
+        key.replace(f"{field_prefix}_", ""): value
+        for key, value in metadata.items()
+        if key.startswith(f"{field_prefix}_")
+    }
 
 
 def build_dict(input_batch: List[List[int]]) -> List[Dict[str, Any]]:
@@ -75,9 +72,7 @@ def generate_sparse_vectors(
     """
     # create batch of input_ids
     inputs = tokenizer(context_batch)["input_ids"]
-    # create sparse dictionaries
-    sparse_embeds = build_dict(inputs)
-    return sparse_embeds
+    return build_dict(inputs)
 
 
 def get_default_tokenizer() -> Callable:
@@ -89,14 +84,12 @@ def get_default_tokenizer() -> Callable:
     from transformers import BertTokenizerFast
 
     orig_tokenizer = BertTokenizerFast.from_pretrained("bert-base-uncased")
-    # set some default arguments, so input is just a list of strings
-    tokenizer = partial(
+    return partial(
         orig_tokenizer,
         padding=True,
         truncation=True,
         max_length=512,
     )
-    return tokenizer
 
 
 class PineconeVectorStore(VectorStore):
@@ -237,20 +230,15 @@ class PineconeVectorStore(VectorStore):
             }
             if node.extra_info:
                 # TODO: check if overlap with default metadata keys
-                metadata.update(
-                    get_metadata_from_node_info(node.extra_info, "extra_info")
-                )
+                metadata |= get_metadata_from_node_info(node.extra_info, "extra_info")
             if node.node_info:
                 # TODO: check if overlap with default metadata keys
                 metadata.update(
                     get_metadata_from_node_info(node.node_info, "node_info")
                 )
-            # if additional metadata keys overlap with the default keys,
-            # then throw an error
-            intersecting_keys = set(metadata.keys()).intersection(
+            if intersecting_keys := set(metadata.keys()).intersection(
                 self._metadata_filters.keys()
-            )
-            if intersecting_keys:
+            ):
                 raise ValueError(
                     "metadata_filters keys overlap with default "
                     f"metadata keys: {intersecting_keys}"
@@ -266,7 +254,7 @@ class PineconeVectorStore(VectorStore):
                 sparse_vector = generate_sparse_vectors(
                     [node.get_text()], self._tokenizer
                 )[0]
-                entry.update({"sparse_values": sparse_vector})
+                entry["sparse_values"] = sparse_vector
             self._pinecone_index.upsert(
                 [entry], namespace=self._namespace, **self._pinecone_kwargs
             )

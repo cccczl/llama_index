@@ -165,7 +165,7 @@ class Refine(BaseResponseBuilder):
                 self._log_prompt_and_response(
                     formatted_prompt, response, log_prefix="Initial"
                 )
-            elif response is None and self._streaming:
+            elif response is None:
                 response, formatted_prompt = self._service_context.llm_predictor.stream(
                     text_qa_template,
                     context_str=cur_text_chunk,
@@ -210,19 +210,17 @@ class Refine(BaseResponseBuilder):
         )
         text_chunks = refine_text_splitter.split_text(text_chunk)
         for cur_text_chunk in text_chunks:
-            if not self._streaming:
-                (
-                    response,
-                    formatted_prompt,
-                ) = self._service_context.llm_predictor.predict(
+            response, formatted_prompt = (
+                self._service_context.llm_predictor.stream(
                     refine_template,
                     context_msg=cur_text_chunk,
                 )
-            else:
-                response, formatted_prompt = self._service_context.llm_predictor.stream(
+                if self._streaming
+                else self._service_context.llm_predictor.predict(
                     refine_template,
                     context_msg=cur_text_chunk,
                 )
+            )
             refine_template = self._refine_template.partial_format(
                 query_str=query_str, existing_answer=response
             )
@@ -440,21 +438,18 @@ class SimpleSummarize(BaseResponseBuilder):
         )
 
         response: RESPONSE_TEXT_TYPE
-        if not self._streaming:
-            (
-                response,
-                formatted_prompt,
-            ) = await self._service_context.llm_predictor.apredict(
+        response, formatted_prompt = (
+            self._service_context.llm_predictor.stream(
                 text_qa_template,
                 context_str=node_text,
             )
-            self._log_prompt_and_response(formatted_prompt, response)
-        else:
-            response, formatted_prompt = self._service_context.llm_predictor.stream(
+            if self._streaming
+            else await self._service_context.llm_predictor.apredict(
                 text_qa_template,
                 context_str=node_text,
             )
-            self._log_prompt_and_response(formatted_prompt, response)
+        )
+        self._log_prompt_and_response(formatted_prompt, response)
         if isinstance(response, str):
             response = response or "Empty Response"
         else:
@@ -475,18 +470,18 @@ class SimpleSummarize(BaseResponseBuilder):
         )
 
         response: RESPONSE_TEXT_TYPE
-        if not self._streaming:
-            (response, formatted_prompt,) = self._service_context.llm_predictor.predict(
+        response, formatted_prompt = (
+            self._service_context.llm_predictor.stream(
                 text_qa_template,
                 context_str=node_text,
             )
-            self._log_prompt_and_response(formatted_prompt, response)
-        else:
-            response, formatted_prompt = self._service_context.llm_predictor.stream(
+            if self._streaming
+            else self._service_context.llm_predictor.predict(
                 text_qa_template,
                 context_str=node_text,
             )
-            self._log_prompt_and_response(formatted_prompt, response)
+        )
+        self._log_prompt_and_response(formatted_prompt, response)
         if isinstance(response, str):
             response = response or "Empty Response"
         else:

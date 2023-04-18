@@ -25,12 +25,13 @@ def save_query_context_to_dict(
     """
     save_dict = {}
     for index_id, index_context_dict in query_context.items():
-        index_save_dict = {}
-        for key, val in index_context_dict.items():
-            if isinstance(val, VectorStore):
-                index_save_dict[key] = save_vector_store_to_dict(
-                    val, cls_to_type=vector_store_cls_to_type
-                )
+        index_save_dict = {
+            key: save_vector_store_to_dict(
+                val, cls_to_type=vector_store_cls_to_type
+            )
+            for key, val in index_context_dict.items()
+            if isinstance(val, VectorStore)
+        }
         save_dict[index_id] = index_save_dict
     return save_dict
 

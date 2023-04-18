@@ -99,8 +99,8 @@ if __name__ == "__main__":
         db_name = db["db_id"]
         if db_name in databases:
             continue
-        db_path = os.path.join(args.input, "database", db_name, db_name + ".sqlite")
-        engine = create_engine("sqlite:///" + db_path)
+        db_path = os.path.join(args.input, "database", db_name, f"{db_name}.sqlite")
+        engine = create_engine(f"sqlite:///{db_path}")
         databases[db_name] = (SQLDatabase(engine=engine), engine)
 
     # Create the LlamaIndexes for all databases.

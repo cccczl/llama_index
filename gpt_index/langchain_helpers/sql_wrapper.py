@@ -49,21 +49,19 @@ class SQLDatabase(LangchainSQLDatabase):
             "Table '{table_name}' has columns: {columns} "
             "and foreign keys: {foreign_keys}."
         )
-        columns = []
-        for column in self._inspector.get_columns(table_name):
-            columns.append(f"{column['name']} ({str(column['type'])})")
+        columns = [
+            f"{column['name']} ({str(column['type'])})"
+            for column in self._inspector.get_columns(table_name)
+        ]
         column_str = ", ".join(columns)
-        foreign_keys = []
-        for foreign_key in self._inspector.get_foreign_keys(table_name):
-            foreign_keys.append(
-                f"{foreign_key['constrained_columns']} -> "
-                f"{foreign_key['referred_table']}.{foreign_key['referred_columns']}"
-            )
+        foreign_keys = [
+            f"{foreign_key['constrained_columns']} -> {foreign_key['referred_table']}.{foreign_key['referred_columns']}"
+            for foreign_key in self._inspector.get_foreign_keys(table_name)
+        ]
         foreign_key_str = ", ".join(foreign_keys)
-        table_str = template.format(
+        return template.format(
             table_name=table_name, columns=column_str, foreign_keys=foreign_key_str
         )
-        return table_str
 
     def insert_into_table(self, table_name: str, data: dict) -> None:
         """Insert data into a table."""

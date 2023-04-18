@@ -98,8 +98,6 @@ def load_index_struct_from_dict(struct_dict: Dict[str, Any]) -> "V2IndexStruct":
     type = struct_dict[TYPE_KEY]
     data_dict = struct_dict[DATA_KEY]
 
-    cls = INDEX_STRUCT_TYPE_TO_INDEX_STRUCT_CLASS[type]
-
     if type == IndexStructType.COMPOSITE:
         struct_dicts: Dict[str, Any] = data_dict["all_index_structs"]
         root_id = data_dict["root_id"]
@@ -109,4 +107,6 @@ def load_index_struct_from_dict(struct_dict: Dict[str, Any]) -> "V2IndexStruct":
         }
         return CompositeIndex(all_index_structs=all_index_structs, root_id=root_id)
     else:
+        cls = INDEX_STRUCT_TYPE_TO_INDEX_STRUCT_CLASS[type]
+
         return cls.from_dict(data_dict)

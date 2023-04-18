@@ -54,7 +54,7 @@ class Playground:
         Args:
             documents: A List of Documents to experiment with.
         """
-        if len(documents) == 0:
+        if not documents:
             raise ValueError(
                 "Playground must be initialized with a nonempty list of Documents."
             )
@@ -66,7 +66,7 @@ class Playground:
 
     def _validate_indices(self, indices: List[BaseGPTIndex]) -> None:
         """Validate a list of indices."""
-        if len(indices) == 0:
+        if not indices:
             raise ValueError("Playground must have a non-empty list of indices.")
         for index in indices:
             if not isinstance(index, BaseGPTIndex):
@@ -87,7 +87,7 @@ class Playground:
 
     def _validate_modes(self, modes: List[str]) -> None:
         """Validate a list of modes."""
-        if len(modes) == 0:
+        if not modes:
             raise ValueError(
                 "Playground must have a nonzero number of modes."
                 "Initialize without the `modes` argument to use the default list."
@@ -149,7 +149,4 @@ class Playground:
                 )
         print(f"\nRan {len(result)} combinations in total.")
 
-        if to_pandas:
-            return pd.DataFrame(result)
-        else:
-            return result
+        return pd.DataFrame(result) if to_pandas else result

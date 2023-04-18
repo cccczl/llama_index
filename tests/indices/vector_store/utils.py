@@ -15,10 +15,7 @@ class MockPineconeIndex:
 
     def delete(self, ids: List[str]) -> None:
         """Mock delete."""
-        new_tuples = []
-        for tup in self._tuples:
-            if tup["id"] not in ids:
-                new_tuples.append(tup)
+        new_tuples = [tup for tup in self._tuples if tup["id"] not in ids]
         self._tuples = new_tuples
 
     def query(

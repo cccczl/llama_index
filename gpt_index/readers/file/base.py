@@ -147,7 +147,7 @@ class SimpleDirectoryReader(BaseReader):
         new_input_files = sorted(list(all_files))
 
         if self.num_files_limit is not None and self.num_files_limit > 0:
-            new_input_files = new_input_files[0 : self.num_files_limit]
+            new_input_files = new_input_files[:self.num_files_limit]
 
         # print total number of files added
         logger.debug(

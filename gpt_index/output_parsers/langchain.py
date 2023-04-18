@@ -29,20 +29,14 @@ class LangchainOutputParser(BaseOutputParser):
         """Format a query with structured output formatting instructions."""
         format_instructions = self._output_parser.get_format_instructions()
 
-        # TODO: this is a temporary hack. if there's curly brackets in the format
-        # instructions (and query is a string template), we need to
-        # escape the curly brackets in the format instructions to preserve the
-        # overall template.
-        query_tmpl_vars = {
+        if query_tmpl_vars := {
             v for _, v, _, _ in Formatter().parse(query) if v is not None
-        }
-        if len(query_tmpl_vars) > 0:
+        }:
             format_instructions = format_instructions.replace("{", "{{")
             format_instructions = format_instructions.replace("}", "}}")
 
-        if self._format_key is not None:
-            fmt_query = query.format(**{self._format_key: format_instructions})
-        else:
-            fmt_query = query + "\n\n" + format_instructions
-
-        return fmt_query
+        return (
+            query.format(**{self._format_key: format_instructions})
+            if self._format_key is not None
+            else query + "\n\n" + format_instructions
+        )

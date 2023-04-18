@@ -209,5 +209,4 @@ class BaseGPTIndexQuery(Generic[IS], ABC):
         """Answer a query."""
         # TODO: support include summary
         nodes = self.retrieve(query_bundle)
-        response = await self.asynthesize(query_bundle, nodes)
-        return response
+        return await self.asynthesize(query_bundle, nodes)

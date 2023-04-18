@@ -203,8 +203,7 @@ class ImageOutputQueryTransform(BaseQueryTransform):
         new_query_str = self._query_prompt.format(
             query_str=query_bundle.query_str, image_width=self._width
         )
-        new_query_bundle = dataclasses.replace(query_bundle, query_str=new_query_str)
-        return new_query_bundle
+        return dataclasses.replace(query_bundle, query_str=new_query_str)
 
 
 class StepDecomposeQueryTransform(BaseQueryTransform):
