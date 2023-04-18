@@ -19,10 +19,7 @@ from gpt_index.output_parsers.base import BaseOutputParser
 
 def get_callable(llm: Optional[BaseLLM]) -> Optional[Callable]:
     """Get callable."""
-    if llm is None:
-        return None
-
-    return llm.__call__
+    return None if llm is None else llm.__call__
 
 
 class GuardrailsOutputParser(BaseOutputParser):
@@ -90,9 +87,8 @@ class GuardrailsOutputParser(BaseOutputParser):
             output_schema=output_schema_text
         )
 
-        if self.format_key is not None:
-            fmt_query = query.format(**{self.format_key: format_instructions})
-        else:
-            fmt_query = query + "\n\n" + format_instructions
-
-        return fmt_query
+        return (
+            query.format(**{self.format_key: format_instructions})
+            if self.format_key is not None
+            else query + "\n\n" + format_instructions
+        )

@@ -49,58 +49,54 @@ class GPTTreeIndexInserter:
         # perform insertion
         self.index_graph.insert_under_parent(text_node, parent_node)
 
-        # if under num_children limit, then we're fine
         if len(self.index_graph.get_children(parent_node)) <= self.num_children:
             return
-        else:
-            # perform consolidation
-            cur_graph_node_ids = self.index_graph.get_children(parent_node)
-            cur_graph_nodes = self._docstore.get_node_dict(cur_graph_node_ids)
-            cur_graph_node_list = get_sorted_node_list(cur_graph_nodes)
-            # this layer is all leaf nodes, consolidate and split leaf nodes
-            # consolidate and split leaf nodes in half
-            # TODO: do better splitting (with a GPT prompt etc.)
-            half1 = cur_graph_node_list[: len(cur_graph_nodes) // 2]
-            half2 = cur_graph_node_list[len(cur_graph_nodes) // 2 :]
+        # perform consolidation
+        cur_graph_node_ids = self.index_graph.get_children(parent_node)
+        cur_graph_nodes = self._docstore.get_node_dict(cur_graph_node_ids)
+        cur_graph_node_list = get_sorted_node_list(cur_graph_nodes)
+        # this layer is all leaf nodes, consolidate and split leaf nodes
+        # consolidate and split leaf nodes in half
+        # TODO: do better splitting (with a GPT prompt etc.)
+        half1 = cur_graph_node_list[: len(cur_graph_nodes) // 2]
+        half2 = cur_graph_node_list[len(cur_graph_nodes) // 2 :]
 
-            text_chunk1 = self._service_context.prompt_helper.get_text_from_nodes(
-                half1, prompt=self.summary_prompt
-            )
-            summary1, _ = self._service_context.llm_predictor.predict(
-                self.summary_prompt, context_str=text_chunk1
-            )
-            node1 = Node(
-                text=summary1,
-            )
-            self.index_graph.insert(node1, children_nodes=half1)
+        text_chunk1 = self._service_context.prompt_helper.get_text_from_nodes(
+            half1, prompt=self.summary_prompt
+        )
+        summary1, _ = self._service_context.llm_predictor.predict(
+            self.summary_prompt, context_str=text_chunk1
+        )
+        node1 = Node(
+            text=summary1,
+        )
+        self.index_graph.insert(node1, children_nodes=half1)
 
-            text_chunk2 = self._service_context.prompt_helper.get_text_from_nodes(
-                half2, prompt=self.summary_prompt
-            )
-            summary2, _ = self._service_context.llm_predictor.predict(
-                self.summary_prompt, context_str=text_chunk2
-            )
-            node2 = Node(
-                text=summary2,
-            )
-            self.index_graph.insert(node2, children_nodes=half2)
+        text_chunk2 = self._service_context.prompt_helper.get_text_from_nodes(
+            half2, prompt=self.summary_prompt
+        )
+        summary2, _ = self._service_context.llm_predictor.predict(
+            self.summary_prompt, context_str=text_chunk2
+        )
+        node2 = Node(
+            text=summary2,
+        )
+        self.index_graph.insert(node2, children_nodes=half2)
 
             # insert half1 and half2 as new children of parent_node
             # first remove child indices from parent node
-            if parent_node is not None:
-                self.index_graph.node_id_to_children_ids[
-                    parent_node.get_doc_id()
-                ] = list()
-            else:
-                self.index_graph.root_nodes = {}
-            self.index_graph.insert_under_parent(
-                node1, parent_node, new_index=self.index_graph.get_index(node1)
-            )
-            self._docstore.add_documents([node1], allow_update=False)
-            self.index_graph.insert_under_parent(
-                node2, parent_node, new_index=self.index_graph.get_index(node2)
-            )
-            self._docstore.add_documents([node2], allow_update=False)
+        if parent_node is None:
+            self.index_graph.root_nodes = {}
+        else:
+            self.index_graph.node_id_to_children_ids[parent_node.get_doc_id()] = []
+        self.index_graph.insert_under_parent(
+            node1, parent_node, new_index=self.index_graph.get_index(node1)
+        )
+        self._docstore.add_documents([node1], allow_update=False)
+        self.index_graph.insert_under_parent(
+            node2, parent_node, new_index=self.index_graph.get_index(node2)
+        )
+        self._docstore.add_documents([node2], allow_update=False)
 
     def _insert_node(self, node: Node, parent_node: Optional[Node] = None) -> None:
         """Insert node."""

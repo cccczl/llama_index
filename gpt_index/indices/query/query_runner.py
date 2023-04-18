@@ -40,14 +40,13 @@ class QueryConfigMap:
         index_struct_id = index_struct.index_id
         index_struct_type = index_struct.get_type()
         if index_struct_id in self.id_to_config_dict:
-            config = self.id_to_config_dict[index_struct_id]
+            return self.id_to_config_dict[index_struct_id]
         elif index_struct_type in self.type_to_config_dict:
-            config = self.type_to_config_dict[index_struct_type]
+            return self.type_to_config_dict[index_struct_type]
         else:
-            config = QueryConfig(
+            return QueryConfig(
                 index_struct_type=index_struct_type, query_mode=QueryMode.DEFAULT
             )
-        return config
 
 
 def _get_query_config_map(
@@ -114,7 +113,7 @@ class QueryRunner:
         Also update with default arguments if not present.
 
         """
-        query_kwargs = {k: v for k, v in config.query_kwargs.items()}
+        query_kwargs = dict(config.query_kwargs.items())
         if "service_context" not in query_kwargs:
             query_kwargs["service_context"] = self._service_context
         return query_kwargs
@@ -171,13 +170,11 @@ class QueryRunner:
         query_context = self._query_context.get(index_struct.index_id, {})
         query_kwargs.update(query_context)
 
-        query_obj = query_cls.from_args(
+        return query_cls.from_args(
             index_struct=index_struct,
             docstore=self._docstore,
             **query_kwargs,
         )
-
-        return query_obj
 
     def query_transformed(
         self,
@@ -201,10 +198,9 @@ class QueryRunner:
                 )
                 nodes_for_synthesis.append(node_with_score)
                 additional_source_nodes.extend(source_nodes)
-            response = query_obj.synthesize(
+            return query_obj.synthesize(
                 query_bundle, nodes_for_synthesis, additional_source_nodes
             )
-            return response
         else:
             return query_obj.query(query_bundle)
 
@@ -266,31 +262,27 @@ class QueryRunner:
     ) -> RESPONSE_TYPE:
         """This is called via BaseQueryCombiner.run."""
         query_obj = self._get_query_obj(index_struct)
-        if self._recursive:
-            logger.debug(f"> Query level : {level} on {index_struct.get_type()}")
-            # call recursively
-            nodes = query_obj.retrieve(query_bundle)
-
-            # do recursion here
-            tasks = []
-            nodes_for_synthesis = []
-            additional_source_nodes = []
-
-            for node_with_score in nodes:
-                tasks.append(
-                    self._afetch_recursive_nodes(node_with_score, query_bundle, level)
-                )
-
-            tuples = await asyncio.gather(*tasks)
-            for node_with_score, source_nodes in tuples:
-                nodes_for_synthesis.append(node_with_score)
-                additional_source_nodes.extend(source_nodes)
-
-            return await query_obj.asynthesize(
-                query_bundle, nodes_for_synthesis, additional_source_nodes
-            )
-        else:
+        if not self._recursive:
             return await query_obj.aquery(query_bundle)
+        logger.debug(f"> Query level : {level} on {index_struct.get_type()}")
+        # call recursively
+        nodes = query_obj.retrieve(query_bundle)
+
+        nodes_for_synthesis = []
+        additional_source_nodes = []
+
+        tasks = [
+            self._afetch_recursive_nodes(node_with_score, query_bundle, level)
+            for node_with_score in nodes
+        ]
+        tuples = await asyncio.gather(*tasks)
+        for node_with_score, source_nodes in tuples:
+            nodes_for_synthesis.append(node_with_score)
+            additional_source_nodes.extend(source_nodes)
+
+        return await query_obj.asynthesize(
+            query_bundle, nodes_for_synthesis, additional_source_nodes
+        )
 
     def _prepare_query_objects(
         self,
@@ -304,11 +296,11 @@ class QueryRunner:
                 index_id = self._index_struct.root_id
             assert index_id is not None
             index_struct = self._index_struct.all_index_structs[index_id]
-        else:
-            if index_id is not None:
-                raise ValueError("index_id should be used with composite graph")
+        elif index_id is None:
             index_struct = self._index_struct
 
+        else:
+            raise ValueError("index_id should be used with composite graph")
         # Wrap query string as QueryBundle if necessary
         if isinstance(query_str_or_bundle, str):
             query_bundle = QueryBundle(

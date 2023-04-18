@@ -116,8 +116,8 @@ class MilvusReader(BaseReader):
             addr = connections.get_connection_addr(x[0])
             if (
                 x[1]
-                and ("address" in addr)
-                and (addr["address"] == "{}:{}".format(self.host, self.port))
+                and "address" in addr
+                and addr["address"] == f"{self.host}:{self.port}"
             ):
                 self.alias = x[0]
                 break

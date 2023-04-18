@@ -54,9 +54,7 @@ class SimpleDocumentStore(BaseDocumentStore):
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dict."""
-        docs_dict = {}
-        for doc_id, doc in self.docs.items():
-            docs_dict[doc_id] = doc_to_json(doc)
+        docs_dict = {doc_id: doc_to_json(doc) for doc_id, doc in self.docs.items()}
         return {"docs": docs_dict, "ref_doc_info": self._ref_doc_info}
 
     @classmethod

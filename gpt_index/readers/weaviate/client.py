@@ -67,8 +67,7 @@ def _get_by_id(client: Any, object_id: str, class_prefix: str) -> Dict:
     class_name = _class_name(class_prefix)
     properties = NODE_SCHEMA
     prop_names = [p["name"] for p in properties]
-    entry = get_by_id(client, object_id, class_name, prop_names)
-    return entry
+    return get_by_id(client, object_id, class_name, prop_names)
 
 
 def create_schema(client: Any, class_prefix: str) -> None:
@@ -130,8 +129,7 @@ def weaviate_query(
     # parse results
     parsed_result = parse_get_response(query_result)
     entries = parsed_result[class_name]
-    results = [_to_node(entry) for entry in entries]
-    return results
+    return [_to_node(entry) for entry in entries]
 
 
 def _class_name(class_prefix: str) -> str:
@@ -142,17 +140,9 @@ def _class_name(class_prefix: str) -> str:
 def _to_node(entry: Dict) -> Node:
     """Convert to Node."""
     extra_info_str = entry["extra_info"]
-    if extra_info_str == "":
-        extra_info = None
-    else:
-        extra_info = json.loads(extra_info_str)
-
+    extra_info = None if extra_info_str == "" else json.loads(extra_info_str)
     node_info_str = entry["node_info"]
-    if node_info_str == "":
-        node_info = None
-    else:
-        node_info = json.loads(node_info_str)
-
+    node_info = None if node_info_str == "" else json.loads(node_info_str)
     relationships_str = entry["relationships"]
     relationships: Dict[DocumentRelationship, str]
     if relationships_str == "":
@@ -178,23 +168,17 @@ def _node_to_dict(node: Node) -> dict:
 
     # json-serialize the extra_info
     extra_info = node_dict.pop("extra_info")
-    extra_info_str = ""
-    if extra_info is not None:
-        extra_info_str = json.dumps(extra_info)
+    extra_info_str = json.dumps(extra_info) if extra_info is not None else ""
     node_dict["extra_info"] = extra_info_str
 
     # json-serialize the node_info
     node_info = node_dict.pop("node_info")
-    node_info_str = ""
-    if node_info is not None:
-        node_info_str = json.dumps(node_info)
+    node_info_str = json.dumps(node_info) if node_info is not None else ""
     node_dict["node_info"] = node_info_str
 
     # json-serialize the relationships
     relationships = node_dict.pop("relationships")
-    relationships_str = ""
-    if relationships is not None:
-        relationships_str = json.dumps(relationships)
+    relationships_str = "" if relationships is None else json.dumps(relationships)
     node_dict["relationships"] = relationships_str
 
     ref_doc_id = node.ref_doc_id

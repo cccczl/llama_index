@@ -23,7 +23,7 @@ def _depth_first_yield(
       of characters, then we collapse it into one line.
 
     """
-    if isinstance(json_data, dict) or isinstance(json_data, list):
+    if isinstance(json_data, (dict, list)):
         # only try to collapse if we're not at a leaf node
         json_str = json.dumps(json_data)
         if collapse_length is not None and len(json_str) <= collapse_length:
@@ -39,7 +39,7 @@ def _depth_first_yield(
                     value, levels_back, collapse_length, new_path
                 )
         elif isinstance(json_data, list):
-            for _, value in enumerate(json_data):
+            for value in json_data:
                 yield from _depth_first_yield(value, levels_back, collapse_length, path)
     else:
         new_path = path[-levels_back:]
@@ -87,7 +87,7 @@ class JSONReader(BaseReader):
                     line for line in lines if not re.match(r"^[{}\[\],]*$", line)
                 ]
                 return [Document("\n".join(useful_lines))]
-            elif self.levels_back is not None:
+            else:
                 # If levels_back is set, we make the embeddings contain the labels
                 # from further up the JSON tree
                 lines = [

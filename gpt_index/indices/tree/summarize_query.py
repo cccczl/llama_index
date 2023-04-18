@@ -77,5 +77,4 @@ class GPTTreeIndexSummarizeQuery(BaseGPTIndexQuery[IndexGraph]):
         logger.info(f"> Starting query: {query_bundle.query_str}")
         index_struct = cast(IndexGraph, self._index_struct)
         all_nodes = self._docstore.get_node_dict(index_struct.all_nodes)
-        sorted_node_list = get_sorted_node_list(all_nodes)
-        return sorted_node_list
+        return get_sorted_node_list(all_nodes)

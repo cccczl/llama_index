@@ -109,12 +109,10 @@ class ResponseEvaluator:
             List of Documents of source nodes information as context information.
         """
 
-        context = []
-
-        for context_info in response.source_nodes:
-            context.append(Document(context_info.source_text))
-
-        return context
+        return [
+            Document(context_info.source_text)
+            for context_info in response.source_nodes
+        ]
 
     def evaluate(self, response: Response) -> str:
         """Evaluate the response from an index.
@@ -229,12 +227,10 @@ class QueryResponseEvaluator:
             List of Documents of source nodes information as context information.
         """
 
-        context = []
-
-        for context_info in response.source_nodes:
-            context.append(Document(context_info.source_text))
-
-        return context
+        return [
+            Document(context_info.source_text)
+            for context_info in response.source_nodes
+        ]
 
     def evaluate(self, query: str, response: Response) -> str:
         """Evaluate the response from an index.

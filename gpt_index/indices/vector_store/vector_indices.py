@@ -145,13 +145,12 @@ class GPTFaissIndex(GPTVectorStoreIndex):
         Returns:
             BaseGPTIndex: The loaded index.
         """
-        if faiss_index_save_path is not None:
-            import faiss
-
-            faiss_index = faiss.read_index(faiss_index_save_path)
-            return super().load_from_disk(save_path, faiss_index=faiss_index, **kwargs)
-        else:
+        if faiss_index_save_path is None:
             return super().load_from_disk(save_path, **kwargs)
+        import faiss
+
+        faiss_index = faiss.read_index(faiss_index_save_path)
+        return super().load_from_disk(save_path, faiss_index=faiss_index, **kwargs)
 
     def save_to_disk(
         self,

@@ -77,7 +77,7 @@ class QdrantVectorStore(VectorStore):
         """
         from qdrant_client.http import models as rest
 
-        if len(embedding_results) > 0 and not self._collection_initialized:
+        if embedding_results and not self._collection_initialized:
             self._create_collection(
                 collection_name=self._collection_name,
                 vector_size=len(embedding_results[0].embedding),
@@ -216,8 +216,7 @@ class QdrantVectorStore(VectorStore):
         if query.doc_ids:
             must_conditions.append(
                 FieldCondition(
-                    key="doc_id",
-                    match=MatchAny(any=[doc_id for doc_id in query.doc_ids]),
+                    key="doc_id", match=MatchAny(any=list(query.doc_ids))
                 )
             )
         return Filter(must=must_conditions)

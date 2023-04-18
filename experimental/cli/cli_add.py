@@ -13,13 +13,10 @@ def add_cli(args: Namespace) -> None:
             raise FileNotFoundError(p)
         if os.path.isdir(p):
             documents = SimpleDirectoryReader(p).load_data()
-            for document in documents:
-                index.insert(document)
         else:
             documents = SimpleDirectoryReader(input_files=[p]).load_data()
-            for document in documents:
-                index.insert(document)
-
+        for document in documents:
+            index.insert(document)
     save_index(index)
 
 

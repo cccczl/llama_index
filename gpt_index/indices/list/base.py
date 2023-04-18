@@ -59,7 +59,7 @@ class GPTListIndex(BaseGPTIndex[IndexList]):
         )
 
     @classmethod
-    def get_query_map(self) -> QueryMap:
+    def get_query_map(cls) -> QueryMap:
         """Get query map."""
         return {
             QueryMode.DEFAULT: GPTListIndexQuery,

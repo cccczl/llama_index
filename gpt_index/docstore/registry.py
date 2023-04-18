@@ -39,7 +39,7 @@ def load_docstore_from_dict(
     # Inject kwargs into data dict.
     # This allows us to explicitly pass in unserializable objects
     # like the data storage (e.g. MongoDB) client.
-    config_dict.update(kwargs)
+    config_dict |= kwargs
 
     cls = type_to_cls[type]
     return cls.from_dict(config_dict)

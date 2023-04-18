@@ -141,7 +141,7 @@ def index_list_to_v2(struct: IndexList) -> Tuple[V2IndexList, List[V2Node]]:
 
 def keyword_table_to_v2(struct: KeywordTable) -> Tuple[V2KeywordTable, List[V2Node]]:
     table_v2 = {
-        keyword: set(struct.text_chunks[index].get_doc_id() for index in indices)
+        keyword: {struct.text_chunks[index].get_doc_id() for index in indices}
         for keyword, indices in struct.table.items()
     }
     struct_v2 = V2KeywordTable(table=table_v2)
@@ -277,8 +277,7 @@ def convert_to_v2_dict(
     index_struct_v2, docstore_v2 = convert_to_v2_index_struct_and_docstore(
         index_struct, docstore
     )
-    v2_dict = save_v2(index_struct_v2, docstore_v2)
-    return v2_dict
+    return save_v2(index_struct_v2, docstore_v2)
 
 
 def convert_to_v2_file(

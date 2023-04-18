@@ -57,10 +57,7 @@ class SingleQueryCombiner(BaseQueryCombiner):
         transform_extra_info = {
             "index_struct": self._index_struct,
         }
-        updated_query_bundle = self._query_transform(
-            query_bundle, extra_info=transform_extra_info
-        )
-        return updated_query_bundle
+        return self._query_transform(query_bundle, extra_info=transform_extra_info)
 
     def run(self, query_bundle: QueryBundle, level: int = 0) -> RESPONSE_TYPE:
         """Run query combiner."""
@@ -83,10 +80,7 @@ def default_stop_fn(stop_dict: Dict) -> bool:
     if query_bundle is None:
         raise ValueError("Response must be provided to stop function.")
 
-    if "none" in query_bundle.query_str.lower():
-        return True
-    else:
-        return False
+    return "none" in query_bundle.query_str.lower()
 
 
 class MultiStepQueryCombiner(BaseQueryCombiner):
@@ -168,9 +162,6 @@ class MultiStepQueryCombiner(BaseQueryCombiner):
             if self._num_steps is not None and cur_steps >= self._num_steps:
                 should_stop = True
                 break
-            elif should_stop:
-                break
-
             updated_query_bundle = self._combine_queries(query_bundle, prev_reasoning)
 
             # TODO: make stop logic better
@@ -189,8 +180,7 @@ class MultiStepQueryCombiner(BaseQueryCombiner):
                 f"Answer: {str(cur_response)}"
             )
             text_chunks.append(cur_qa_text)
-            for source_node in cur_response.source_nodes:
-                source_nodes.append(source_node)
+            source_nodes.extend(iter(cur_response.source_nodes))
             # update extra info
             final_response_extra_info["sub_qa"].append(
                 (updated_query_bundle.query_str, cur_response)

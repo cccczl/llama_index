@@ -160,7 +160,7 @@ class GPTTreeIndexBuilder:
         new_node_dict = self._construct_parent_nodes(
             index_graph, indices, cur_nodes_chunks, summaries
         )
-        all_node_ids.update(new_node_dict)
+        all_node_ids |= new_node_dict
 
         index_graph.root_nodes = new_node_dict
 
@@ -202,7 +202,7 @@ class GPTTreeIndexBuilder:
         new_node_dict = self._construct_parent_nodes(
             index_graph, indices, cur_nodes_chunks, summaries
         )
-        all_node_ids.update(new_node_dict)
+        all_node_ids |= new_node_dict
 
         index_graph.root_nodes = new_node_dict
 

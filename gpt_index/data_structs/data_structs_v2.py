@@ -36,11 +36,10 @@ class V2IndexStruct(DataClassJsonMixin):
         """Get index struct type."""
 
     def to_dict(self, encode_json: bool = False) -> Dict[str, Json]:
-        out_dict = {
+        return {
             TYPE_KEY: self.get_type(),
             DATA_KEY: super().to_dict(encode_json),
         }
-        return out_dict
 
 
 @dataclass
@@ -87,12 +86,11 @@ class IndexGraph(V2IndexStruct):
         """Get children nodes."""
         if parent_node is None:
             return self.root_nodes
-        else:
-            parent_id = parent_node.get_doc_id()
-            children_ids = self.node_id_to_children_ids[parent_id]
-            return {
-                self.node_id_to_index[child_id]: child_id for child_id in children_ids
-            }
+        parent_id = parent_node.get_doc_id()
+        children_ids = self.node_id_to_children_ids[parent_id]
+        return {
+            self.node_id_to_index[child_id]: child_id for child_id in children_ids
+        }
 
     def insert_under_parent(
         self, node: Node, parent_node: Optional[Node], new_index: Optional[int] = None
@@ -253,17 +251,12 @@ class KG(V2IndexStruct):
         # NOTE: return a single node for now
         if keyword not in self.rel_map:
             return []
-        texts = []
-        for obj, rel in self.rel_map[keyword]:
-            texts.append(str((keyword, rel, obj)))
-        return texts
+        return [str((keyword, rel, obj)) for obj, rel in self.rel_map[keyword]]
 
     def get_rel_map_tuples(self, keyword: str) -> List[Tuple[str, str]]:
         """Get the corresponding knowledge for a given keyword."""
         # NOTE: return a single node for now
-        if keyword not in self.rel_map:
-            return []
-        return self.rel_map[keyword]
+        return [] if keyword not in self.rel_map else self.rel_map[keyword]
 
     def get_node_ids(self, keyword: str, depth: int = 1) -> List[str]:
         """Get the corresponding knowledge for a given keyword."""
@@ -278,9 +271,8 @@ class KG(V2IndexStruct):
 
         node_ids: List[str] = []
         for keyword in keywords:
-            for node_id in self.table.get(keyword, set()):
-                node_ids.append(node_id)
-            # TODO: Traverse (with depth > 1)
+            node_ids.extend(iter(self.table.get(keyword, set())))
+                # TODO: Traverse (with depth > 1)
         return node_ids
 
     @classmethod
@@ -410,8 +402,7 @@ class CompositeIndex(V2IndexStruct):
             "root_id": self.root_id,
         }
 
-        out_dict = {
+        return {
             TYPE_KEY: self.get_type(),
             DATA_KEY: data_dict,
         }
-        return out_dict

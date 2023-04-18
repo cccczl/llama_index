@@ -164,7 +164,7 @@ def _match_answers(
         if e["exec_match"] is not None and e["answer_match"] is not None
     ]
     answer_accuracy = sum(
-        [e["exec_match"] or e["answer_match"] for e in valid_results]
+        e["exec_match"] or e["answer_match"] for e in valid_results
     ) / float(len(valid_results))
     with open(output_filename, "w") as f:
         json.dump(
@@ -228,12 +228,12 @@ if __name__ == "__main__":
     train_gold_sqls = []
     dev_gold_sqls = []
     with open(os.path.join(args.spider_dir, "train_gold.sql"), "r") as f:
-        for line in f.readlines():
+        for line in f:
             line_tokens = line.strip().split("\t")
             train_gold_sqls.append(line_tokens[0])
             train_dbs.append(line_tokens[1])
     with open(os.path.join(args.spider_dir, "dev_gold.sql"), "r") as f:
-        for line in f.readlines():
+        for line in f:
             line_tokens = line.strip().split("\t")
             dev_gold_sqls.append(line_tokens[0])
             dev_dbs.append(line_tokens[1])

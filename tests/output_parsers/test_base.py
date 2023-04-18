@@ -18,10 +18,7 @@ class MockOutputParser(LCOutputParser):
 
     def get_format_instructions(self) -> str:
         """Get format instructions."""
-        fmt_instructions = (
-            f"{{ {self.response_schema.name}, {self.response_schema.description} }}"
-        )
-        return fmt_instructions
+        return f"{{ {self.response_schema.name}, {self.response_schema.description} }}"
 
     def parse(self, text: str) -> str:
         """Parse the output of an LLM call."""

@@ -119,7 +119,7 @@ class MilvusVectorStore(VectorStore):
             self.collection = None
 
         # If a collection already exists and we are overwriting, delete it
-        if self.collection is not None and self.overwrite is True:
+        if self.collection is not None and self.overwrite:
             try:
                 utility.drop_collection(self.collection_name, using=self.alias)
                 self.collection = None
@@ -135,12 +135,11 @@ class MilvusVectorStore(VectorStore):
             self._create_collection()
 
         # If there is a collection and no index exists on it, create an index
-        if self.collection is not None and len(self.collection.indexes) == 0:
-            self._create_index()
-        # If using an existing index and no search params were provided,
-        #   generate the correct params
-        elif self.collection is not None and self.search_params is None:
-            self._create_search_params()
+        if self.collection is not None:
+            if len(self.collection.indexes) == 0:
+                self._create_index()
+            elif self.search_params is None:
+                self._create_search_params()
 
         # If there is a collection with an index, make sure its loaded
         if self.collection is not None and len(self.collection.indexes) != 0:
@@ -157,10 +156,10 @@ class MilvusVectorStore(VectorStore):
             tmp_user = "" if self.user is None else self.user
             if (
                 x[1]
-                and ("address" in addr)
-                and (addr["address"] == "{}:{}".format(self.host, self.port))
-                and ("user" in addr)
-                and (addr["user"] == tmp_user)
+                and "address" in addr
+                and addr["address"] == f"{self.host}:{self.port}"
+                and "user" in addr
+                and addr["user"] == tmp_user
             ):
                 self.alias = x[0]
                 logger.debug(f"Using previous connection: {self.alias}")
@@ -324,7 +323,7 @@ class MilvusVectorStore(VectorStore):
         from pymilvus import MilvusException
 
         # If the collection doesnt exist yet, create the collection, index, and load it
-        if self.collection is None and len(embedding_results) != 0:
+        if self.collection is None and embedding_results:
             self.dim = len(embedding_results[0].embedding)
             self._create_collection()
             self._create_index()
@@ -371,17 +370,13 @@ class MilvusVectorStore(VectorStore):
 
         # Adds ability for multiple doc delete in future.
         doc_ids: List[str]
-        if type(doc_id) != list:
-            doc_ids = [doc_id]
-        else:
-            doc_ids = doc_id  # type: ignore
-
+        doc_ids = [doc_id] if type(doc_id) != list else doc_id
         try:
             # Begin by querying for the primary keys to delete
-            doc_ids = ['"' + entry + '"' for entry in doc_ids]
+            doc_ids = [f'"{entry}"' for entry in doc_ids]
             entries = self.collection.query(f"doc_id in [{','.join(doc_ids)}]")
             ids = [entry["id"] for entry in entries]
-            ids = ['"' + entry + '"' for entry in ids]
+            ids = [f'"{entry}"' for entry in ids]
             self.collection.delete(f"id in [{','.join(ids)}]")
             logger.debug(f"Successfully deleted embedding with doc_id: {doc_ids}")
         except MilvusException as e:
@@ -406,7 +401,7 @@ class MilvusVectorStore(VectorStore):
 
         expr: Optional[str] = None
         if query.doc_ids is not None and len(query.doc_ids) != 0:
-            expr_list = ['"' + entry + '"' for entry in query.doc_ids]
+            expr_list = [f'"{entry}"' for entry in query.doc_ids]
             expr = f"doc_id in [{','.join(expr_list)}]"
 
         try:

@@ -218,10 +218,7 @@ def _get_embeddings(
         "This is another test.": [0.0, 0.0, 1.0, 0.0, 0.0],
         "This is a test v2.": [0.0, 0.0, 0.0, 1.0, 0.0],
     }
-    node_embeddings = []
-    for node in nodes:
-        node_embeddings.append(text_embed_map[node.get_text()])
-
+    node_embeddings = [text_embed_map[node.get_text()] for node in nodes]
     return [1.0, 0, 0, 0, 0], node_embeddings
 
 

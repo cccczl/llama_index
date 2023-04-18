@@ -111,7 +111,7 @@ def struct_kwargs() -> Tuple[Dict, List]:
 @pytest.fixture
 def documents() -> List[Document]:
     """Get documents."""
-    docs = [
+    return [
         Document("This is a test v2."),
         Document("This is another test."),
         Document("This is a test."),
@@ -121,7 +121,6 @@ def documents() -> List[Document]:
         Document("This is another test."),
         Document("This is a test v2."),
     ]
-    return docs
 
 
 def mock_get_query_embedding(query: str) -> List[float]:
@@ -139,22 +138,14 @@ def mock_get_query_embedding(query: str) -> List[float]:
 def mock_get_text_embedding(text: str) -> List[float]:
     """Mock get text embedding."""
     # assume dimensions are 5
-    if text == "Hello world.":
+    if text in {"Hello world.", "toronto london"}:
         return [1, 0, 0, 0, 0]
-    elif text == "This is a test.":
-        return [0, 1, 0, 0, 0]
-    elif text == "This is another test.":
-        return [0, 0, 1, 0, 0]
-    elif text == "This is a test v2.":
+    elif text in {"This is a test v2.", "cat dog"}:
         return [0, 0, 0, 1, 0]
-    elif text == "foo bar":
-        return [0, 0, 1, 0, 0]
-    elif text == "apple orange":
+    elif text in {"This is a test.", "apple orange"}:
         return [0, 1, 0, 0, 0]
-    elif text == "toronto london":
-        return [1, 0, 0, 0, 0]
-    elif text == "cat dog":
-        return [0, 0, 0, 1, 0]
+    elif text in {"This is another test.", "foo bar"}:
+        return [0, 0, 1, 0, 0]
     else:
         raise ValueError("Invalid text for `mock_get_text_embedding`.")
 
@@ -195,7 +186,7 @@ def test_recursive_query_vector_table(
     # try building a tree for a group of 4, then a list
     # use a diff set of documents
     # try building a list for every two, then a tree
-    list1 = GPTSimpleVectorIndex.from_documents(documents[0:2], **vector_kwargs)
+    list1 = GPTSimpleVectorIndex.from_documents(documents[:2], **vector_kwargs)
     list2 = GPTSimpleVectorIndex.from_documents(documents[2:4], **vector_kwargs)
     list3 = GPTSimpleVectorIndex.from_documents(documents[4:6], **vector_kwargs)
     list4 = GPTSimpleVectorIndex.from_documents(documents[6:8], **vector_kwargs)
@@ -307,7 +298,7 @@ def test_recursive_query_vector_table_query_configs(
     # try building a tre for a group of 4, then a list
     # use a diff set of documents
     # try building a list for every two, then a tree
-    list1 = GPTSimpleVectorIndex.from_documents(documents[0:2], **vector_kwargs)
+    list1 = GPTSimpleVectorIndex.from_documents(documents[:2], **vector_kwargs)
     list2 = GPTSimpleVectorIndex.from_documents(documents[2:4], **vector_kwargs)
     assert isinstance(list1.index_struct, V2IndexStruct)
     assert isinstance(list2.index_struct, V2IndexStruct)
@@ -373,7 +364,7 @@ def test_recursive_query_vector_table_async(
     # try building a tree for a group of 4, then a list
     # use a diff set of documents
     # try building a list for every two, then a tree
-    list1 = GPTSimpleVectorIndex.from_documents(documents[0:2], **vector_kwargs)
+    list1 = GPTSimpleVectorIndex.from_documents(documents[:2], **vector_kwargs)
     list2 = GPTSimpleVectorIndex.from_documents(documents[2:4], **vector_kwargs)
     list3 = GPTSimpleVectorIndex.from_documents(documents[4:6], **vector_kwargs)
     list4 = GPTSimpleVectorIndex.from_documents(documents[6:8], **vector_kwargs)
@@ -429,7 +420,7 @@ def test_recursive_query_vector_vector(
     # try building a tree for a group of 4, then a list
     # use a diff set of documents
     # try building a list for every two, then a tree
-    list1 = GPTSimpleVectorIndex.from_documents(documents[0:2], **vector_kwargs)
+    list1 = GPTSimpleVectorIndex.from_documents(documents[:2], **vector_kwargs)
     list2 = GPTSimpleVectorIndex.from_documents(documents[2:4], **vector_kwargs)
     list3 = GPTSimpleVectorIndex.from_documents(documents[4:6], **vector_kwargs)
     list4 = GPTSimpleVectorIndex.from_documents(documents[6:8], **vector_kwargs)
@@ -506,7 +497,7 @@ def test_recursive_query_pinecone_pinecone(
     # use a diff set of documents
     # try building a list for every two, then a tree
     pinecone1 = GPTPineconeIndex.from_documents(
-        documents[0:2],
+        documents[:2],
         pinecone_index=pinecone_index1,
         tokenizer=mock_tokenizer,
         **pinecone_kwargs

@@ -50,12 +50,12 @@ class FaissVectorStore(VectorStore):
     def from_dict(cls, config_dict: Dict[str, Any]) -> "FaissVectorStore":
         if "faiss_index" in config_dict:
             return cls(**config_dict)
+        save_path = config_dict.get("save_path", None)
+        if save_path is None:
+            raise ValueError("Missing both faiss index and save path!")
+
         else:
-            save_path = config_dict.get("save_path", None)
-            if save_path is not None:
-                return cls.load(save_path=save_path)
-            else:
-                raise ValueError("Missing both faiss index and save path!")
+            return cls.load(save_path=save_path)
 
     @property
     def config_dict(self) -> dict:
@@ -146,12 +146,12 @@ class FaissVectorStore(VectorStore):
         dists, indices = self._faiss_index.search(
             query_embedding_np, query.similarity_top_k
         )
-        dists = [d for d in dists[0]]
+        dists = list(dists[0])
         # if empty, then return an empty response
         if len(indices) == 0:
             return VectorStoreQueryResult(similarities=[], ids=[])
 
         # returned dimension is 1 x k
-        node_idxs = list([str(i) for i in indices[0]])
+        node_idxs = [str(i) for i in indices[0]]
 
         return VectorStoreQueryResult(similarities=dists, ids=node_idxs)

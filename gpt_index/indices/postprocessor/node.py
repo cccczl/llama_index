@@ -103,9 +103,10 @@ def get_forward_nodes(
     nodes: Dict[str, Node] = {node.get_doc_id(): node}
     cur_count = 0
     # get forward nodes in an iterative manner
-    while cur_count < num_nodes:
-        if DocumentRelationship.NEXT not in node.relationships:
-            break
+    while (
+        cur_count < num_nodes
+        and DocumentRelationship.NEXT in node.relationships
+    ):
         next_node_id = node.relationships[DocumentRelationship.NEXT]
         next_node = docstore.get_node(next_node_id)
         if next_node is None:
@@ -123,9 +124,10 @@ def get_backward_nodes(
     # get backward nodes in an iterative manner
     nodes: Dict[str, Node] = {node.get_doc_id(): node}
     cur_count = 0
-    while cur_count < num_nodes:
-        if DocumentRelationship.PREVIOUS not in node.relationships:
-            break
+    while (
+        cur_count < num_nodes
+        and DocumentRelationship.PREVIOUS in node.relationships
+    ):
         prev_node_id = node.relationships[DocumentRelationship.PREVIOUS]
         prev_node = docstore.get_node(prev_node_id)
         if prev_node is None:
@@ -161,9 +163,10 @@ class PrevNextNodePostprocessor(BaseNodePostprocessor):
         # get backward nodes in an iterative manner
         nodes: Dict[str, Node] = {node.get_doc_id(): node}
         cur_count = 0
-        while cur_count < self.num_nodes:
-            if DocumentRelationship.PREVIOUS not in node.relationships:
-                break
+        while (
+            cur_count < self.num_nodes
+            and DocumentRelationship.PREVIOUS in node.relationships
+        ):
             prev_node_id = node.relationships[DocumentRelationship.PREVIOUS]
             prev_node = self.docstore.get_node(prev_node_id)
             if prev_node is None:
@@ -188,7 +191,7 @@ class PrevNextNodePostprocessor(BaseNodePostprocessor):
         for node in nodes:
             all_nodes[node.get_doc_id()] = node
             if self.mode == "next":
-                all_nodes.update(get_forward_nodes(node, self.num_nodes, self.docstore))
+                all_nodes |= get_forward_nodes(node, self.num_nodes, self.docstore)
             elif self.mode == "previous":
                 all_nodes.update(
                     get_backward_nodes(node, self.num_nodes, self.docstore)
@@ -323,14 +326,12 @@ class AutoPrevNextNodePostprocessor(BaseNodePostprocessor):
                 print(f"> Postprocessor Predicted mode: {mode}")
 
             if mode == "next":
-                all_nodes.update(get_forward_nodes(node, self.num_nodes, self.docstore))
+                all_nodes |= get_forward_nodes(node, self.num_nodes, self.docstore)
             elif mode == "previous":
                 all_nodes.update(
                     get_backward_nodes(node, self.num_nodes, self.docstore)
                 )
-            elif mode == "none":
-                pass
-            else:
+            elif mode != "none":
                 raise ValueError(f"Invalid mode: {mode}")
 
         sorted_nodes = sorted(all_nodes.values(), key=lambda x: x.get_doc_id())

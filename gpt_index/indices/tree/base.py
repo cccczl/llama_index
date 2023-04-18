@@ -77,7 +77,7 @@ class GPTTreeIndex(BaseGPTIndex[IndexGraph]):
         )
 
     @classmethod
-    def get_query_map(self) -> QueryMap:
+    def get_query_map(cls) -> QueryMap:
         """Get query map."""
         return {
             QueryMode.DEFAULT: GPTTreeIndexLeafQuery,
@@ -108,8 +108,7 @@ class GPTTreeIndex(BaseGPTIndex[IndexGraph]):
             use_async=self._use_async,
             docstore=self._docstore,
         )
-        index_graph = index_builder.build_from_nodes(nodes, build_tree=self.build_tree)
-        return index_graph
+        return index_builder.build_from_nodes(nodes, build_tree=self.build_tree)
 
     def _insert(self, nodes: Sequence[Node], **insert_kwargs: Any) -> None:
         """Insert a document."""

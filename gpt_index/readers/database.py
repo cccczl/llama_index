@@ -90,8 +90,8 @@ class DatabaseReader(BaseReader):
             else:
                 result = connection.execute(text(query))
 
-            for item in result.fetchall():
-                # fetch each item
-                doc_str = ", ".join([str(entry) for entry in item])
-                documents.append(Document(doc_str))
+            documents.extend(
+                Document(", ".join([str(entry) for entry in item]))
+                for item in result.fetchall()
+            )
         return documents

@@ -14,17 +14,23 @@ class MockMongoCollection:
         self._data: Dict[str, dict] = {}
 
     def find_one(self, filter: dict) -> Optional[dict]:
-        for data in self._data.values():
-            if filter is None or all(data[key] == val for key, val in filter.items()):
-                return data.copy()
-        return None
+        return next(
+            (
+                data.copy()
+                for data in self._data.values()
+                if filter is None
+                or all(data[key] == val for key, val in filter.items())
+            ),
+            None,
+        )
 
     def find(self, filter: Optional[dict] = None) -> List[dict]:
-        data_list = []
-        for data in self._data.values():
-            if filter is None or all(data[key] == val for key, val in filter.items()):
-                data_list.append(data.copy())
-        return data_list
+        return [
+            data.copy()
+            for data in self._data.values()
+            if filter is None
+            or all(data[key] == val for key, val in filter.items())
+        ]
 
     def delete_one(self, filter: dict) -> Any:
         matched = self.find_one(filter)
@@ -42,8 +48,7 @@ class MockMongoCollection:
         elif upsert:
             self.insert_one(obj)
 
-        update_result = Mock()
-        return update_result
+        return Mock()
 
     def insert_one(self, obj: dict, _id: Optional[str] = None) -> Any:
         _id = _id or str(uuid.uuid4())
@@ -59,9 +64,8 @@ class MockMongoCollection:
         if matched is not None:
             _id = matched["_id"]
             self._data[_id].update(update)
-        else:
-            if upsert:
-                self.insert_one(update)
+        elif upsert:
+            self.insert_one(update)
 
     def insert_many(self, objs: List[dict]) -> Any:
         results = [self.insert_one(obj) for obj in objs]

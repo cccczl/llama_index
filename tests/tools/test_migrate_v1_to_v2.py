@@ -51,17 +51,9 @@ def test_index_graph_to_v2() -> None:
     """Test index graph conversion."""
     struct_v1 = IndexGraph()
 
-    root_node = Node(
-        text="root_text",
-        index=0,
-        child_indices=set([1, 2]),
-    )
+    root_node = Node(text="root_text", index=0, child_indices={1, 2})
 
-    child_node_1 = Node(
-        text="root_text",
-        index=1,
-        child_indices=set([3]),
-    )
+    child_node_1 = Node(text="root_text", index=1, child_indices={3})
 
     child_node_2 = Node(
         text="root_text",
@@ -107,12 +99,11 @@ def test_keyword_table_to_v2() -> None:
         text="test_text_2",
     )
     struct_v1 = KeywordTable(
-        table={"foo": set([1, 2]), "bar": set([1])},
-        text_chunks={1: node_1, 2: node_2},
+        table={"foo": {1, 2}, "bar": {1}}, text_chunks={1: node_1, 2: node_2}
     )
     struct_v2, _ = keyword_table_to_v2(struct_v1)
-    assert struct_v2.table["foo"] == set([node_1.get_doc_id(), node_2.get_doc_id()])
-    assert struct_v2.table["bar"] == set([node_1.get_doc_id()])
+    assert struct_v2.table["foo"] == {node_1.get_doc_id(), node_2.get_doc_id()}
+    assert struct_v2.table["bar"] == {node_1.get_doc_id()}
 
 
 def test_index_dict_to_v2() -> None:
@@ -165,7 +156,7 @@ def test_kg_to_v2() -> None:
         text="test_text_2",
     )
     struct_v1 = KG(
-        table={"foo": set(["node_1", "node_2"]), "bar": set(["node_1"])},
+        table={"foo": {"node_1", "node_2"}, "bar": {"node_1"}},
         text_chunks={
             "node_1": node_1,
             "node_2": node_2,

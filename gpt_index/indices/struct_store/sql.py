@@ -95,18 +95,17 @@ class GPTSQLStructStoreIndex(BaseGPTStructStoreIndex[SQLStructTable]):
         index_struct = self.index_struct_cls()
         if len(nodes) == 0:
             return index_struct
-        else:
-            data_extractor = SQLStructDatapointExtractor(
-                self._service_context.llm_predictor,
-                self.schema_extract_prompt,
-                self.output_parser,
-                self.sql_database,
-                table_name=self._table_name,
-                table=self._table,
-                ref_doc_id_column=self._ref_doc_id_column,
-            )
-            for node in nodes:
-                data_extractor.insert_datapoint_from_nodes([node])
+        data_extractor = SQLStructDatapointExtractor(
+            self._service_context.llm_predictor,
+            self.schema_extract_prompt,
+            self.output_parser,
+            self.sql_database,
+            table_name=self._table_name,
+            table=self._table,
+            ref_doc_id_column=self._ref_doc_id_column,
+        )
+        for node in nodes:
+            data_extractor.insert_datapoint_from_nodes([node])
         return index_struct
 
     def _insert(self, nodes: Sequence[Node], **insert_kwargs: Any) -> None:
@@ -123,7 +122,7 @@ class GPTSQLStructStoreIndex(BaseGPTStructStoreIndex[SQLStructTable]):
         data_extractor.insert_datapoint_from_nodes(nodes)
 
     @classmethod
-    def get_query_map(self) -> QueryMap:
+    def get_query_map(cls) -> QueryMap:
         """Get query map."""
         return {
             QueryMode.DEFAULT: GPTNLStructStoreIndexQuery,
@@ -173,10 +172,9 @@ class GPTSQLStructStoreIndex(BaseGPTStructStoreIndex[SQLStructTable]):
         sql_context_container = SQLContextContainer.from_dict(
             result_dict["sql_context_container"]
         )
-        result_obj = super().load_from_string(
+        return super().load_from_string(
             index_string, sql_context_container=sql_context_container, **kwargs
         )
-        return result_obj
 
     def save_to_string(self, **save_kwargs: Any) -> str:
         """Save to string.

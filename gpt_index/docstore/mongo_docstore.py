@@ -190,9 +190,7 @@ class MongoDocumentStore(BaseDocumentStore):
     def get_document_hash(self, doc_id: str) -> Optional[str]:
         """Get the stored hash for a document, if it exists."""
         obj = self.hash_collection.find_one(filter={"doc_id": doc_id})
-        if obj is not None:
-            return obj.get("doc_hash", None)
-        return None
+        return obj.get("doc_hash", None) if obj is not None else None
 
     def update_docstore(self, other: "BaseDocumentStore") -> None:
         """Update docstore.

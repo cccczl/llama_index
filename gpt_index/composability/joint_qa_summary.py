@@ -70,10 +70,8 @@ class QASummaryGraphBuilder:
         vector_index.index_struct.summary = self._qa_text
         list_index.index_struct.summary = self._summary_text
 
-        graph = ComposableGraph.from_indices(
+        return ComposableGraph.from_indices(
             GPTTreeIndex,
             [vector_index, list_index],
             service_context=self._service_context,
         )
-
-        return graph

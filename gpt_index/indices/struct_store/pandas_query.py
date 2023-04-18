@@ -56,12 +56,8 @@ def default_output_processor(
         except Exception as e:
             raise e
     except Exception as e:
-        err_string = (
-            "There was an error running the output as Python code. "
-            f"Error message: {e}"
-        )
         traceback.print_exc()
-        return err_string
+        return f"There was an error running the output as Python code. Error message: {e}"
 
 
 class GPTNLPandasIndexQuery(BaseGPTIndexQuery[PandasStructTable]):

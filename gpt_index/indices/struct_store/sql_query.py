@@ -48,8 +48,7 @@ class GPTSQLStructStoreIndexQuery(BaseGPTIndexQuery[SQLStructTable]):
         # NOTE: since the query_str is a SQL query, it doesn't make sense
         # to use ResponseBuilder anywhere.
         response_str, extra_info = self._sql_database.run_sql(query_bundle.query_str)
-        response = Response(response=response_str, extra_info=extra_info)
-        return response
+        return Response(response=response_str, extra_info=extra_info)
 
     @llm_token_counter("query")
     async def aquery(self, query_bundle: QueryBundle) -> Response:
@@ -97,8 +96,7 @@ class GPTNLStructStoreIndexQuery(BaseGPTIndexQuery[SQLStructTable]):
 
     def _parse_response_to_sql(self, response: str) -> str:
         """Parse response to SQL."""
-        result_response = response.strip()
-        return result_response
+        return response.strip()
 
     def _get_table_context(self, query_bundle: QueryBundle) -> str:
         """Get table context.
@@ -108,20 +106,15 @@ class GPTNLStructStoreIndexQuery(BaseGPTIndexQuery[SQLStructTable]):
 
         """
         if self._sql_context_container.context_str is not None:
-            tables_desc_str = self._sql_context_container.context_str
-        else:
-            table_desc_list = []
-            context_dict = self._sql_context_container.context_dict
-            if context_dict is None:
-                raise ValueError(
-                    "context_dict must be provided. There is currently no "
-                    "table context."
-                )
-            for table_desc in context_dict.values():
-                table_desc_list.append(table_desc)
-            tables_desc_str = "\n\n".join(table_desc_list)
-
-        return tables_desc_str
+            return self._sql_context_container.context_str
+        context_dict = self._sql_context_container.context_dict
+        if context_dict is None:
+            raise ValueError(
+                "context_dict must be provided. There is currently no "
+                "table context."
+            )
+        table_desc_list = list(context_dict.values())
+        return "\n\n".join(table_desc_list)
 
     def query(self, query_bundle: QueryBundle) -> Response:
         """Answer a query."""
@@ -140,8 +133,7 @@ class GPTNLStructStoreIndexQuery(BaseGPTIndexQuery[SQLStructTable]):
 
         response_str, extra_info = self._sql_database.run_sql(sql_query_str)
         extra_info["sql_query"] = sql_query_str
-        response = Response(response=response_str, extra_info=extra_info)
-        return response
+        return Response(response=response_str, extra_info=extra_info)
 
     async def aquery(self, query_bundle: QueryBundle) -> Response:
         """Answer a query."""
@@ -160,5 +152,4 @@ class GPTNLStructStoreIndexQuery(BaseGPTIndexQuery[SQLStructTable]):
 
         response_str, extra_info = self._sql_database.run_sql(sql_query_str)
         extra_info["sql_query"] = sql_query_str
-        response = Response(response=response_str, extra_info=extra_info)
-        return response
+        return Response(response=response_str, extra_info=extra_info)
